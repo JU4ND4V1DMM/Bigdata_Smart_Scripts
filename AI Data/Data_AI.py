@@ -112,6 +112,7 @@ def BD_Control_Next(Path_Original, outpath, partitions):
     Data_Root = Data_Root.withColumn("REFERENCIA", col("27_"))
     
     Data_Root = Data_Dates(Data_Root)
+    
     Data_Root, max_value, max_date = Data_Dates_Div(Data_Root)
     print("First Step: Dates divide\n")
     Data_Root = columns_stack(Data_Root, max_value, max_date)
@@ -183,6 +184,9 @@ def Data_Dates(Data_):
     return Stacked_Data_Frame
 
 def Data_Dates_Div(Data_Frame):
+    
+    Data_Frame.select("Dato_Fecha").distinct().show(50, truncate=False)
+
     Data_Frame = Data_Frame.withColumn("Date_Split", split(col("Dato_Fecha"), "/"))
     Data_Frame = Data_Frame.withColumn("Date", (Data_Frame["Date_Split"][0]))
     Data_Frame = Data_Frame.withColumn("MES DE ASIGNACION", (Data_Frame["Date_Split"][1]))
@@ -367,6 +371,7 @@ def Save_File(Data_Frame, Directory_to_Save, Partitions, Filter_DataBase, Time_F
             os.rename(old_file_path, new_file_path)
 
 def change_name_column(Data_, Column):
+    
     Data_ = Data_.withColumn(Column, upper(col(Column)))
     character_list_N = ["\\ÃƒÂ‘", "\\Ã‚Â¦", "\\Ã‘", "Ñ", "ÃƒÂ‘", "Ã‚Â¦", "Ã‘"]
     for character in character_list_N:
@@ -378,6 +383,7 @@ def change_name_column(Data_, Column):
                       "\\.", '#', '$', '/', '<', '>', "\\*", "SEÑORES ", "SEÑOR(A) ", "SEÑOR ", "SEÑORA ", "SENORES ",\
                       "SENOR(A) ", "SENOR ", "SENORA ", "¡", "!", "\\?", "¿", "_", "-", "}", "\\{", "\\+", "0 ", "1 ", "2 ", "3 ",\
                       "4 ", "5 ", "6 ", "7 ", "8 ", "9 ", "0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "  "]
+    
     for character in character_list:
         Data_ = Data_.withColumn(Column, regexp_replace(col(Column), character, ""))
     Data_ = Data_.withColumn(Column, regexp_replace(Column, "[^A-Z& ]", ""))
@@ -388,7 +394,7 @@ def change_name_column(Data_, Column):
     return Data_
 
 # Example usage
-input_folder = "D:/Cloud/OneDrive - Recupera SAS/Data Claro/2025/03. Marzo/"
+input_folder = "D:/Cloud/OneDrive - Recupera SAS/Data Claro/2025/04. Abril/"
 output_folder = "C:/Users/juan_/Downloads/"
 num_partitions = 1
 BD_Control_Next(input_folder, output_folder, num_partitions)

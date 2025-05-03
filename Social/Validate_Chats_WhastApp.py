@@ -3,6 +3,7 @@ import csv
 import time
 from datetime import datetime
 from selenium import webdriver
+from selenium.common.exceptions import TimeoutException, NoSuchElementException
 from selenium.webdriver.chrome.service import Service as ChromeService
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.common.by import By
@@ -18,7 +19,17 @@ def login_whatsapp(driver):
         print("Logging into WhatsApp Web...")
         driver.get('https://web.whatsapp.com/')
         WebDriverWait(driver, 30).until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/div[3]/div/div[3]/header')))
-        print("Logged in successfully.")
+        
+        # Check for the button and click if it exists
+        try:
+            button = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.XPATH, '//*[@id="app"]/div/span[2]/div/div/div/div/div/div/div[2]/div/button')))
+            button.click()
+            print("Clicked the button before logging in.")
+        except TimeoutException:
+            print("The button was not found; proceeding without clicking.")
+        
+        print("Logged succesfully.")
+        
     except selexceptions.TimeoutException:
         print("Error: Timeout while logging in.")
         driver.quit()
@@ -37,10 +48,10 @@ def validate_whatsapp(driver, phone_number):
         # Clear the search box before entering the new phone number
         search_box.clear()
         search_box.send_keys(phone_number)
-        time.sleep(0.2)
+        time.sleep(0.5)
 
         # Wait for the element indicating a chat exists
-        chat_exist = WebDriverWait(driver, 5).until(EC.presence_of_element_located((By.CLASS_NAME, '_ak8l')))
+        chat_exist = WebDriverWait(driver, 3).until(EC.presence_of_element_located((By.CLASS_NAME, '_ak8l')))
         if chat_exist:
             chat_exist.click()
             print(f"Number {phone_number} has WhatsApp. ✅")
@@ -86,15 +97,15 @@ def process_numbers(input_path, output_path):
             # Write results to the output file immediately
             with open(output_path, 'a', newline='', encoding='utf-8') as outfile:
                 writer = csv.writer(outfile, delimiter=';')
-                writer.writerow([phone_number, "True" if has_whatsapp else "❌ False", entry_date, time_with_minutes, only_hour])
+                writer.writerow([phone_number, "True" if has_whatsapp else "False", entry_date, time_with_minutes, only_hour])
 
     driver.quit()
     print(f"Process completed. Results saved to: {output_path}")
 
 # Get the user and date for dynamic paths
 date = datetime.now().strftime("%Y-%m-%d")
-path = r"C:\Users\juan_\Downloads\demos\Demograficos Consolidados 20250421 1.csv" 
-output_path = "C:/Users/juan_/Downloads/Whatsapp_Check_Results.csv"
+path = r"C:\Users\c.operativo\Downloads\Libro1.csv" 
+output_path = "C:/Users/c.operativo/Downloads/Whatsapp_Check_Results.csv"
 
-# Run the process
+# Run the process 
 process_numbers(path, output_path)
